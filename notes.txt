@@ -3,3 +3,5 @@ Read
 Evaluate
 Print
 Loop
+
+callback: fn that takes another fn as a argument
