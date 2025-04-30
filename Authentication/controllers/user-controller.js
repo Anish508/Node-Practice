@@ -93,9 +93,9 @@ const loginUser = async (req, res) => {
     );
     res.status(200).json({
       success: true,
-      message:"login successfull",
-      accessToken
-    })
+      message: "login successfull",
+      accessToken,
+    });
   } catch (error) {
     console.log(error);
 
@@ -106,7 +106,50 @@ const loginUser = async (req, res) => {
   }
 };
 
+const changePassword = async (req, res) => {
+  try {
+    const userId = req.userInfo.userId;
+
+    const { oldPassword, newPassword } = req.body;
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    const isPassMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isPassMatch) {
+      return res.status(400).json({
+        success: false,
+        message: "Password not matching please try again!",
+      });
+    }
+
+    //hash the new
+    const salt = await bcrypt.genSalt(10);
+    const newHashedPass = await bcrypt.hash(newPassword, salt);
+
+    //updates user pass
+    user.password = newHashedPass;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Password changed successfully",
+    });
+  } catch (error) {
+    console.log("Error:", error);
+    res.status(501).json({
+      success: false,
+      message: "something went wrong",
+    });
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
+  changePassword
 };
