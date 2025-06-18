@@ -1,6 +1,7 @@
 const User = require("../model/user-model.js");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+
 const registerUser = async (req, res) => {
   try {
     const { username, email, password, role } = req.body;
@@ -83,14 +84,15 @@ const loginUser = async (req, res) => {
     const accessToken = jwt.sign(
       {
         userId: user?._id,
-        username: user.username,
-        role: user.role,
+        username: user?.username,
+        role: user?.role,
       },
       process.env.JWT_SCECRET_KEY,
       {
         expiresIn: "15m",
       }
     );
+    
     res.status(200).json({
       success: true,
       message: "login successfull",
@@ -108,12 +110,14 @@ const loginUser = async (req, res) => {
 
 const changePassword = async (req, res) => {
   try {
+    //user id from auth middleware after loggedIn
     const userId = req.userInfo.userId;
 
+    //Extract old and new pass
     const { oldPassword, newPassword } = req.body;
     const user = await User.findById(userId);
     if (!user) {
-      return res.status(400).json({
+      return res.status(400).json({ 
         success: false,
         message: "User not found",
       });
