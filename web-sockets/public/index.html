@@ -1,83 +1,101 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>chat app</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chat App</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-  <div id="user-list">
-    <h3>online users</h3>
-    <ul id="users"></ul>
+<body class="bg-gray-100 font-sans">
+
+  <div class="max-w-4xl mx-auto mt-8 p-4 bg-white shadow-lg rounded-md">
+    <div class="grid grid-cols-4 gap-4">
+      
+      <!-- User List -->
+      <div class="col-span-1 border-r pr-4">
+        <h3 class="text-xl font-semibold mb-2 text-blue-600">Online Users</h3>
+        <ul id="users" class="space-y-1 text-gray-700 list-disc list-inside"></ul>
+      </div>
+      
+      <!-- Chat Section -->
+      <div class="col-span-3 flex flex-col">
+        <div id="chat" class="flex-1 overflow-y-auto border rounded p-4 h-96 bg-gray-50 space-y-2 text-sm text-gray-800"></div>
+        
+        <!-- Message Form -->
+        <form id="message-form" class="mt-4 flex">
+          <input
+            type="text"
+            id="message-input"
+            placeholder="Enter your message"
+            required
+            class="flex-1 border border-gray-300 rounded-l px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+          <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-r hover:bg-blue-600">
+            Send
+          </button>
+        </form>
+      </div>
+    </div>
   </div>
-  <div id="chat"></div>
-  <form action="" id="message-form">
-    <input type="text"
-    id="message-input"
-    placeholder="Enter your messages"
-    required
-    >
-    <button type="submit">Send</button>
-  </form>
+
   <script src="/socket.io/socket.io.js"></script>
   <script>
-     const socket = io();
+    const socket = io();
 
-     const chat = document.getElementById('chat')
-     const usersList = document.getElementById('users') 
-     const messageForm = document.getElementById('message-form')
-     const messageInput = document.getElementById('message-input')
+    const chat = document.getElementById('chat');
+    const usersList = document.getElementById('users');
+    const messageForm = document.getElementById('message-form');
+    const messageInput = document.getElementById('message-input');
 
-     const username = prompt("Enter your user name");
+    let username = prompt("Enter your user name");
+    while (!username || !username.trim()) {
+      username = prompt("Username cannot be empty. Enter your user name");
+    }
 
-     //emit join event
-     socket.emit('join', username)
+    // emit join event
+    socket.emit('join', username);
 
-     socket.on('userJoined', (user)=>{
-      addMessage(`${user} has joined the chat`)
-     })
+    socket.on('userJoined', (user) => {
+      addMessage(`${user} has joined the chat`);
+    });
 
-     socket.on('userLeft',(user)=>{
+    socket.on('userLeft', (user) => {
       addMessage(`${user} has left the chat`);
-     })
-     socket.on('userList',(users)=>{
-      usersList.innerHTML = users.map(user=>`<li>${user}</li>`).join(" ")
-     })
+    });
 
-     //handel form submission
-     messageForm.addEventListener('submit',(event)=>{
+    socket.on('userList', (users) => {
+      usersList.innerHTML = users.map(user => `<li>${user}</li>`).join('');
+    });
+
+    messageForm.addEventListener('submit', (event) => {
       event.preventDefault();
 
       const extractMessageText = messageInput.value.trim();
-
-      if(extractMessageText){
+      if (extractMessageText) {
         socket.emit('chatMessage', {
-          username, 
+          username,
           text: extractMessageText
-        })
+        });
 
         messageInput.value = "";
       }
-     })
+    });
 
-     //listen for chat message events from server
-     socket.on('chatMessage', (message)=>{
-      addMessage(`${message.username}:${message.text}`)
-     })
+    socket.on('chatMessage', (message) => {
+      addMessage(`${message.username}: ${message.text}`);
+    });
 
-     socket.on('usernameError', (message)=>{
+    socket.on('usernameError', (message) => {
       alert(message);
-      window.location.reload(); 
-     })
-     function addMessage(input){
+      window.location.reload();
+    });
+
+    function addMessage(input) {
       const messageElement = document.createElement('div');
       messageElement.textContent = input;
-
-      chat.appendChild(messageElement)
-
-      //scroll to the bottom of the chat conatiner
+      chat.appendChild(messageElement);
       chat.scrollTop = chat.scrollHeight;
-     }
+    }
   </script>
 </body>
 </html>
