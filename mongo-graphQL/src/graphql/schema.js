@@ -13,21 +13,21 @@ const typeDefs = gql`
     product(id: ID!): Product
   }
 
-  type Mutation {
-    createProduct(
-      title: String!
-      category: String!
-      price: Float!
+input ProductInput {
+  title: String!
+  category: String!
+  price: Float!
+}
 
+  type Mutation {
+    createProduct(input: ProductInput!
     ): Product
 
     deleteProduct(id: ID!): Boolean
 
     updateProduct(
-      id: ID!
-      title: String
-      category: String
-      price: Float
+      id:ID!
+      input: ProductInput 
     ): Product
   }
 `;
